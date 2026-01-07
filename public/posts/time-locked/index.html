@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Time-Locked Authentication Crackme Write-up | Schnee | Software Security</title>
+<meta name="keywords" content="">
+<meta name="description" content="Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
+">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/time-locked/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/time-locked/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .list::-webkit-scrollbar-thumb {
+                border-color: var(--code-bg);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Time-Locked Authentication Crackme Write-up
+    </h1>
+    <div class="post-description">
+      Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
+
+    </div>
+    <div class="post-meta"><span title='2026-01-07 00:00:00 +0000 UTC'>January 7, 2026</span>&nbsp;·&nbsp;<span>3 min</span>
+
+</div>
+  </header> 
+  <div class="post-content"><h2 id="infos">Infos<a hidden class="anchor" aria-hidden="true" href="#infos">#</a></h2>
+<ul>
+<li><strong>Author: <a href="mailto:zaq3m1hjx@mozmail.com">zaq3m1hjx@mozmail.com</a></strong></li>
+<li><strong>Crackme Link: <a href="https://crackmes.one/crackme/69218b532d267f28f69b7fd3">https://crackmes.one/crackme/69218b532d267f28f69b7fd3</a></strong></li>
+<li><strong>Platform: ELF x64</strong></li>
+<li><strong>Difficulty: 3.0 (crackmes.one rating)</strong></li>
+<li><strong>Tools Used: IDA</strong></li>
+</ul>
+<hr>
+<h2 id="description">Description<a hidden class="anchor" aria-hidden="true" href="#description">#</a></h2>
+<p>&ldquo;Password changes every millisecond, brute force impossible&hellip; think outside the password.&rdquo;</p>
+<hr>
+<h2 id="initial-reconnaissance">Initial Reconnaissance<a hidden class="anchor" aria-hidden="true" href="#initial-reconnaissance">#</a></h2>
+<p>As always, we&rsquo;ll first run the strings command:</p>
+<pre tabindex="0"><code>/lib64/ld-linux-x86-64.so.2
+snprintf
+puts
+clock_gettime
+__libc_start_main
+__cxa_finalize
+__isoc99_scanf
+strcmp
+</code></pre><p>We get two hints running strings</p>
+<ul>
+<li>strcmp is used, maybe to compare the input to a password?</li>
+<li>scanf is used, which is known for its security vulnerability when it comes to buffer overflows</li>
+</ul>
+<h3 id="static-analysis--ida">Static Analysis | IDA<a hidden class="anchor" aria-hidden="true" href="#static-analysis--ida">#</a></h3>
+<p>Our main functions just calls one function, which I will reference to as main from now on:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sub_1311</span>()
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> input[<span style="color:#ae81ff">8</span>]; <span style="color:#75715e">// [rsp+4h] [rbp-Ch] BYREF
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> successBool; <span style="color:#75715e">// [rsp+Ch] [rbp-4h] BYREF
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  successBool <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Enter password: &#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">__isoc99_scanf</span>(<span style="color:#e6db74">&#34;%s&#34;</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">mainCompareLogic</span>(input, <span style="color:#f92672">&amp;</span>successBool);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( successBool <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span> )
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">print_success_msg</span>();
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">puts</span>(<span style="color:#e6db74">&#34;Authentication Failed&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>and here&rsquo;s the mainCompareLogic function,  althought we won&rsquo;t be going too deep into the function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">mainCompareLogic</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>input, _DWORD <span style="color:#f92672">*</span>a2)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> cmp_result; <span style="color:#75715e">// eax
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> s2[<span style="color:#ae81ff">32</span>]; <span style="color:#75715e">// [rsp+10h] [rbp-140h] BYREF
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">struct</span> timespec tp; <span style="color:#75715e">// [rsp+30h] [rbp-120h] BYREF
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> inputAndTime[<span style="color:#ae81ff">264</span>]; <span style="color:#75715e">// [rsp+40h] [rbp-110h] BYREF
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">time_t</span> v6; <span style="color:#75715e">// [rsp+148h] [rbp-8h]
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  v6 <span style="color:#f92672">=</span> <span style="color:#a6e22e">time</span>(<span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">clock_gettime</span>(<span style="color:#ae81ff">0</span>, <span style="color:#f92672">&amp;</span>tp);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">snprintf</span>(inputAndTime, <span style="color:#ae81ff">0x100u</span>, <span style="color:#e6db74">&#34;%s_%ld%09ld&#34;</span>, input, tp.tv_sec, tp.tv_nsec);
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">strcpy</span>(s2, <span style="color:#e6db74">&#34;admin_1732276800123456789&#34;</span>);
+</span></span><span style="display:flex;"><span>  cmp_result <span style="color:#f92672">=</span> <span style="color:#a6e22e">strcmp</span>(inputAndTime, s2);
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> ( <span style="color:#f92672">!</span>cmp_result )
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">*</span>a2 <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> (<span style="color:#66d9ef">int</span>)a2;
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">return</span> cmp_result;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Looking at the <em>main</em>, we already see the function we want the program to reach, the &ldquo;print_success_msg&rdquo; function.
+<em>print_success_msg</em> does nothing apart from printing &ldquo;Access Granted!&rdquo;.</p>
+<p>We have multiple options here:</p>
+<ul>
+<li>simply patch the successBool check to always return true</li>
+<li>load our own strcmp function with LD_PRELOAD which already returns true</li>
+<li>change our local time to match the hardcoded timestamp (1732276800 seconds and 123456789 nanoseconds), which is practically infeasible</li>
+<li>use buffer overflow to set the <em>successBool</em> variable to 1</li>
+</ul>
+<h3 id="buffer-overflow">Buffer Overflow<a hidden class="anchor" aria-hidden="true" href="#buffer-overflow">#</a></h3>
+<p>The main() function reads the password using scanf(&quot;%s&quot;, input), which performs no bounds checking. Since input is only 8 bytes long, this allows us to overflow the buffer.</p>
+<p>Looking at the stack layout:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span>  <span style="color:#66d9ef">char</span> input[<span style="color:#ae81ff">8</span>]; <span style="color:#75715e">// [rsp+4h] [rbp-Ch] BYREF
+</span></span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">int</span> successBool; <span style="color:#75715e">// [rsp+Ch] [rbp-4h] BYREF
+</span></span></span></code></pre></div><p>The successBool variable is located immediately after input on the stack. By providing more than 8 bytes of input, we can overwrite successBool.</p>
+<p>The program only sets successBool to 1 if the password comparison succeeds. On failure, the variable remains unchanged. This allows us to pre-set it via a buffer overflow before the comparison occurs.</p>
+<p>To do this, we provide:</p>
+<ul>
+<li>8 bytes of padding</li>
+<li>followed by the 4-byte little-endian value 1</li>
+</ul>
+<p>Since the value 0x01 is not printable, we use printf to construct the payload:</p>
+<pre tabindex="0"><code>printf &#34;AAAAAAAA\x01\x00\x00\x00&#34; | ./crackme
+Enter password: Access Granted!
+</code></pre><h3 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h3>
+<p>The challenge was fun, but I honestly wouldn&rsquo;t give the challenge a rating of 3 when it comes to difficulty. I feel like the Unix challenges get higher ratings compared to the Windows challenges I&rsquo;m used to - there was no obfuscation, no anti debugging and no encryption involved. With a simple byte change this challenge could have been completed.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">Schnee | Software Security</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

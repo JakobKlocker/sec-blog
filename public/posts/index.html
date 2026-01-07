@@ -113,6 +113,15 @@
 </header>
 
 <article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Time-Locked Authentication Crackme Write-up
+    </h2>
+  </header>
+  <footer class="entry-footer"><span title='2026-01-07 00:00:00 +0000 UTC'>January 7, 2026</span>&nbsp;·&nbsp;<span>3 min</span></footer>
+  <a class="entry-link" aria-label="post link to Time-Locked Authentication Crackme Write-up" href="http://localhost:1313/posts/time-locked/"></a>
+</article>
+
+<article class="post-entry"> 
 <figure class="entry-cover">
             <img loading="lazy" src="http://localhost:1313/posts/matryoshka/cover.png" alt="">
 </figure>
@@ -120,11 +129,6 @@
     <h2 class="entry-hint-parent">Matryoshka Crackme Write-up
     </h2>
   </header>
-  <div class="entry-content">
-    <p>Crackme Write-up — Matryoshka Infos Author: iamwololo Crackme Link: https://crackmes.one/crackme/68ff42b82d267f28f69b78c8 Platform: ELF x64 Difficulty: 2.4 (crackmes.one rating) Tools Used: IDA Goal: Print “u win good job!!!” 1. Introduction When downloading the crackme there is a readme attached, explaining there are no flags added but the crackme should print “u win good job!!” once it was sucessfully cracked.
-2. Initial Reconnaissance As always, we’ll first run the strings command: Most of the syscalls look familiar, the only one I’d have to look up was memfd_create. Turns out it is a neat syscall to create a file in RAM, removing it once all references to the fd are closed.
-...</p>
-  </div>
   <footer class="entry-footer"><span title='2026-01-06 00:00:00 +0000 UTC'>January 6, 2026</span>&nbsp;·&nbsp;<span>4 min</span></footer>
   <a class="entry-link" aria-label="post link to Matryoshka Crackme Write-up" href="http://localhost:1313/posts/matryoshka/"></a>
 </article>

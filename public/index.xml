@@ -6,8 +6,16 @@
     <description>Recent content on Schnee | Software Security</description>
     <generator>Hugo -- 0.154.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 06 Jan 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 07 Jan 2026 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Time-Locked Authentication Crackme Write-up</title>
+      <link>http://localhost:1313/posts/time-locked/</link>
+      <pubDate>Wed, 07 Jan 2026 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/time-locked/</guid>
+      <description>Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
+</description>
+    </item>
     <item>
       <title>Matryoshka Crackme Write-up</title>
       <link>http://localhost:1313/posts/matryoshka/</link>
