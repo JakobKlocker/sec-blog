@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="en" dir="auto" data-theme="auto">
+<html lang="en" dir="auto" data-theme="dark">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <title>Matryoshka Crackme Write-up | Schnee | Software Security</title>
 <meta name="keywords" content="">
 <meta name="description" content="Reverse-engineering write-up of the Matryoshka crackme, focusing on its in-memory ELF loader using memfd_create and execve.
 ">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/matryoshka/">
+<link rel="canonical" href="https://schnee.re/posts/matryoshka/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
-<link rel="icon" href="http://localhost:1313/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
-<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<link rel="icon" href="https://schnee.re/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://schnee.re/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://schnee.re/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://schnee.re/apple-touch-icon.png">
+<link rel="mask-icon" href="https://schnee.re/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/matryoshka/">
+<link rel="alternate" hreflang="en" href="https://schnee.re/posts/matryoshka/">
 <noscript>
     <style>
         #theme-toggle,
@@ -28,56 +28,84 @@
         }
 
     </style>
-    <style>
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --theme: rgb(29, 30, 32);
-                --entry: rgb(46, 46, 51);
-                --primary: rgb(218, 218, 219);
-                --secondary: rgb(155, 156, 157);
-                --tertiary: rgb(65, 66, 68);
-                --content: rgb(196, 196, 197);
-                --code-block-bg: rgb(46, 46, 51);
-                --code-bg: rgb(55, 56, 62);
-                --border: rgb(51, 51, 51);
-                color-scheme: dark;
-            }
-
-            .list {
-                background: var(--theme);
-            }
-
-            .toc {
-                background: var(--entry);
-            }
-        }
-
-        @media (prefers-color-scheme: light) {
-            .list::-webkit-scrollbar-thumb {
-                border-color: var(--code-bg);
-            }
-        }
-
-    </style>
 </noscript>
 <script>
-    if (localStorage.getItem("pref-theme") === "dark") {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else if (localStorage.getItem("pref-theme") === "light") {
-       document.querySelector("html").dataset.theme = 'light';
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else {
+    if (localStorage.getItem("pref-theme") === "light") {
         document.querySelector("html").dataset.theme = 'light';
     }
 
+</script><meta property="og:url" content="https://schnee.re/posts/matryoshka/">
+  <meta property="og:site_name" content="Schnee | Software Security">
+  <meta property="og:title" content="Matryoshka Crackme Write-up">
+  <meta property="og:description" content="Reverse-engineering write-up of the Matryoshka crackme, focusing on its in-memory ELF loader using memfd_create and execve.">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-01-06T00:00:00+00:00">
+    <meta property="article:modified_time" content="2026-01-06T00:00:00+00:00">
+      <meta property="og:image" content="https://schnee.re/posts/matryoshka/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://schnee.re/posts/matryoshka/cover.png">
+<meta name="twitter:title" content="Matryoshka Crackme Write-up">
+<meta name="twitter:description" content="Reverse-engineering write-up of the Matryoshka crackme, focusing on its in-memory ELF loader using memfd_create and execve.
+">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://schnee.re/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Matryoshka Crackme Write-up",
+      "item": "https://schnee.re/posts/matryoshka/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Matryoshka Crackme Write-up",
+  "name": "Matryoshka Crackme Write-up",
+  "description": "Reverse-engineering write-up of the Matryoshka crackme, focusing on its in-memory ELF loader using memfd_create and execve.\n",
+  "keywords": [
+    
+  ],
+  "articleBody": "Infos Author: iamwololo Crackme Link: https://crackmes.one/crackme/68ff42b82d267f28f69b78c8 Platform: ELF x64 Difficulty: 2.4 (crackmes.one rating) Tools Used: IDA Introduction This write-up analyzes the Matryoshka crackme from crackmes.one. The challenge implements a multi-stage in-memory ELF loader using memfd_create and execve, with each stage decrypted via a simple XOR.\nThe goal is to recover the correct input that eventually triggers the final stage to print “u win good job!!!”.\nInitial Reconnaissance As always, we’ll first run the strings command: Most of the syscalls look familiar, the only one I’d have to look up was memfd_create. Turns out it is a neat syscall to create a file in RAM, removing it once all references to the fd are closed.\nLooking at the name “Matryoshka”, which suggests something with many layers, and knowing that we’ll be running “execve” and writing to a file in RAM, I would guess that we’ll have a binary blob somewhere we’ll be executing.\nLet’s find out and continue with our static analysis.\nStatic Analysis | IDA After renaming the relevant functions and variables our main functions looks like following:\n__int64 __fastcall main(int argc, char **argv, char **env) { char xorValue; // [rsp+1Fh] [rbp-21h] char *newArgv[4]; // [rsp+20h] [rbp-20h] BYREF newArgv[3] = (char *)__readfsqword(0x28u); if ( argc == 2 ) { xorValue = *argv[1] - 87; newArgv[0] = (char *)\u0026unk_201C; newArgv[1] = argv[1] + 1; if ( mainLogic(\u0026binBlob, binSize, xorValue, newArgv) == -1 ) useless(); return 0; } else { puts(\"usage: ./matryoshka key\"); return 0; } } As we can see the mainLogic function takes 4 arguments, first the binary blob, secondly the binary size, third the xorValue (which is the first char of the input - 87) and the new argv (where the input moved one char to the right).\nThe mainLogic function has three main functions:\nint __fastcall mainLogic(const void *binBlob, unsigned int blobSize, char xorValue, char *const *newArgv) { FILE *fd; // [rsp+28h] [rbp-8h] xorBlob((__int64)binBlob, blobSize, xorValue); fd = createWriteFile(binBlob, blobSize, 1u); return executeFdWithExecve(fd, (__int64)\u0026unk_201D, newArgv); } as you can see there are 3 relevant functions:\nxorBlob: simple xor function, the binary blob gets xored with the xorValue createWriteFile: we create a file from the binary blob with the mentioned syscall memfd_create executeFdWIthExecve: we execute the binary blob with execve and the new argv I won’t go into detail about those three functions, since they basically do as described above. Since we now know the high level structure of the program, let’s see how we can get the correct xor value/input.\nGetting correct Input Since execve requires a valid ELF file, the correct XOR key must produce the ELF magic bytes (0x7f 45 4c 46) at the beginning of the decrypted blob. With that information I wrote a script bruteforcing the XOR key. Since I’m trying to get used to the IDA api, I decided to write an IDA python script for the challenge:\nimport ida_bytes import ida_name import ida_idaapi blob = 0x4080 size = ida_bytes.get_dword( ida_name.get_name_ea(ida_idaapi.BADADDR, \"dword_EA60\") ) data = ida_bytes.get_bytes(blob, size) def xor(data, k): return bytes(b ^ (k \u0026 0xff) for b in data) KEY = None for k in range(-128, 128): dec = xor(data, k) head = dec[:0x200] if b\"\\x7fELF\" in head: off = head.index(b\"\\x7fELF\") KEY = k print(k) break if KEY is None: raise RuntimeError(\"Key not found\") OUT = \"/tmp/matryoshka_stage.bin\" dec = bytes(b ^ (KEY \u0026 0xff) for b in data) with open(OUT, \"wb\") as f: f.write(dec) The script sucessfully executed and we’ve just found our first char Input, “f”.\nIt turns out, the next 2 characters are obtained the same way, the structure of the new binary is exactly the same, apart from the xor key.\nSo we run our script again and get the next 2 characters, “b3”.\nThe last binary is a simply atoi which converts the input and checks if it’s “9”: Conclusion Even though there was no anti debugging nor obfuscation involved I enjoyed the challenge, especially since it gave me the opportunity to do some IDA scripting.\nfinal key: “fb39”\n",
+  "wordCount" : "661",
+  "inLanguage": "en",
+  "image": "https://schnee.re/posts/matryoshka/cover.png","datePublished": "2026-01-06T00:00:00Z",
+  "dateModified": "2026-01-06T00:00:00Z",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://schnee.re/posts/matryoshka/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schnee | Software Security",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schnee.re/favicon.ico"
+    }
+  }
+}
 </script>
 </head>
 <body id="top">
     <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
+            <a href="https://schnee.re/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -109,7 +137,7 @@
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="https://schnee.re/">Home</a>&nbsp;»&nbsp;<a href="https://schnee.re/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Matryoshka Crackme Write-up
     </h1>
@@ -241,7 +269,7 @@ Since I&rsquo;m trying to get used to the IDA api, I decided to write an IDA pyt
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="http://localhost:1313/">Schnee | Software Security</a></span> · 
+        <span>&copy; 2026 <a href="https://schnee.re/">Schnee | Software Security</a></span> · 
 
     <span>
         Powered by

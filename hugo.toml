@@ -1,4 +1,4 @@
-baseURL = "http://localhost/"
+baseURL = "https://schnee.re/"
 languageCode = "en-us"
 title = "Schnee | Software Security"
 theme = "PaperMod"
@@ -11,7 +11,7 @@ theme = "PaperMod"
   ShowCodeCopyButtons = true
   ShowBreadCrumbs = true
 
-  defaultTheme = "auto"
+  defaultTheme = "dark"
   disableThemeToggle = false
 
   mainSections = ["posts"]
