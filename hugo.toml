@@ -3,8 +3,38 @@ languageCode = "en-us"
 title = "Schnee | Software Security"
 theme = "PaperMod"
 
+[pagination]
+  pagerSize = 10
+
 [params]
   ShowReadingTime = true
   ShowCodeCopyButtons = true
   ShowBreadCrumbs = true
 
+  defaultTheme = "auto"
+  disableThemeToggle = false
+
+  mainSections = ["posts"]
+
+[params.profileMode]
+  enabled = true
+  title = "Schnee"
+  subtitle = """
+Reverse Engineering · Software Security · Low-Level
+"""
+  imageUrl = "/images/avatar.png"
+  imageTitle = "Schnee"
+  imageWidth = 160
+  imageHeight = 160
+
+  [[params.profileMode.buttons]]
+    name = "About"
+    url = "/about/"
+
+  [[params.profileMode.buttons]]
+    name = "Posts"
+    url = "/posts/"
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true

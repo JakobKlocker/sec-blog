@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Finding Encrypted Game Values Using Cheat Engine | Schnee | Software Security</title>
+<meta name="keywords" content="">
+<meta name="description" content="An introduction to locating decrypted runtime values in games using Cheat Engine, illustrated with MapleStory">
+<meta name="author" content="Schnee">
+<link rel="canonical" href="http://localhost:1313/posts/encrypted-values/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/encrypted-values/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .list::-webkit-scrollbar-thumb {
+                border-color: var(--code-bg);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Finding Encrypted Game Values Using Cheat Engine
+    </h1>
+    <div class="post-meta"><span title='2023-06-09 18:34:14 +0100 +0100'>June 9, 2023</span>&nbsp;·&nbsp;<span>7 min</span>&nbsp;·&nbsp;<span>Schnee</span>
+
+</div>
+  </header> 
+  <div class="post-content"><h1 id="intro">Intro<a hidden class="anchor" aria-hidden="true" href="#intro">#</a></h1>
+<p>Most games these days will encrypt important values such as player &amp; enemy information.<br>
+This makes it harder to find this information, since we can&rsquo;t just search the memory for an exact value without knowing the encryption.<br>
+Since the game needs the actual values to do arithmetic and logic operations on it these values will have to be decrypted, worked with and encrypted again. In this post I will explain how to find the decrypted values, using the gold value as an example.</p>
+<h1 id="approaches">Approaches<a hidden class="anchor" aria-hidden="true" href="#approaches">#</a></h1>
+<p>There are two common approaches, one is to reverse the encryption/decryption function and use that to decrypt the encrypted value which is stored on the heap.<br>
+The other one is to hook the place where the game is working with the decrypted values and edit/copy the content there.<br>
+We will be doing the second approach today, the first approach will be covered in a later post.</p>
+<h1 id="tools">Tools<a hidden class="anchor" aria-hidden="true" href="#tools">#</a></h1>
+<p>We&rsquo;ll be using mainly Cheat Engine for memory scanning &amp; tracing and IDA to get a better understanding of the functions we&rsquo;re analysing.<br>
+<a href="https://en.wikipedia.org/wiki/Cheat_Engine">https://en.wikipedia.org/wiki/Cheat_Engine</a><br>
+<a href="https://en.wikipedia.org/wiki/Interactive_Disassembler">https://en.wikipedia.org/wiki/Interactive_Disassembler</a></p>
+<h1 id="theory">Theory<a hidden class="anchor" aria-hidden="true" href="#theory">#</a></h1>
+<p>In today&rsquo;s post we will be looking for the gold value and display it in a C/C++ console.<br>
+Since the value is encrypted, we can&rsquo;t search for the exact amount of gold we are holding since that value is never stored on the heap.<br>
+Therefore we will be using Cheat Engines &ldquo;Changed Value&rdquo; &amp; &ldquo;Unchanged Value&rdquo; scanning option to find the encrypted gold address.<br><br></p>
+<p>The theory is to first scan for an &ldquo;Unknown initial value&rdquo;. Then to scan for &ldquo;Changed Value&rdquo; when the amount of Gold you are holding has Changed and for &ldquo;Unchanged Value&rdquo; when the Value hasn&rsquo;t changed. Repeat this step till you are down to a few addresses.<br>
+After that we will use Cheat Engines &ldquo;Find out what writes to this address&rdquo; function to find the function which writes to the memory address where the encrypted value is stored. This should lead us to the encryption function.<br>
+By tracing back the stack we can find out which function called the encryption function and fetch the real gold value before it&rsquo;s encrypted. To achieve our goal we will be placing a hook at the place where our value is decrypted, storing it into our own allocated memory &amp; printing it into a C/C++ console.</p>
+<h1 id="skills-requiered">Skills requiered<a hidden class="anchor" aria-hidden="true" href="#skills-requiered">#</a></h1>
+<p>-Basic x86 ASM<br>
+-Basic Debugging experience</p>
+<h1 id="skills-acquired">Skills acquired<a hidden class="anchor" aria-hidden="true" href="#skills-acquired">#</a></h1>
+<p>-Basic understanding of memory scanning<br>
+-Dynamic Analysis</p>
+<h1 id="practical---finding-encrypted-gold-address">Practical - Finding Encrypted gold address<a hidden class="anchor" aria-hidden="true" href="#practical---finding-encrypted-gold-address">#</a></h1>
+<br>
+1. First open Cheat Engine and attach it to the Game.
+<img src="https://user-images.githubusercontent.com/108685788/211548714-81dc412d-e006-43bc-a07d-553aa54c5ddb.gif" Width="50%" Height="50%"/>
+<br>
+2. Search for "Unknown initial value" with value type 4 Bytes. The value type may vary depending on which type is holding the gold, if you can't find any decent result with 4 Bytes try 2 Bytes (short) or 8 Bytes (long). Most games will use 4 Bytes though. This will search the entire memory of the process attached for a specific type.
+<img src="https://user-images.githubusercontent.com/108685788/211549848-cab11583-8072-4d57-89e8-7b041a4520dc.gif" Width="50%" Height="50%"/>
+3. In game change your gold by dropping or gaining gold and search for "Changed Value". Since we do not know how the encryption works we can't search for "increased" or "decreased value". This will filter out all values which haven't changed. 
+<img src="https://user-images.githubusercontent.com/108685788/211550929-5e3ae24f-2563-4349-a5b0-9a7ff6f572a0.gif" Width="50%" Height="50%"/>
+4. Use different game functions like attacking, moving without changing your gold. Search for "Unchanged Value". This will filter out all values which have been changed. It is a good idea to use as many in game functions as possible to trigger a change to uninteresting values.
+<img src="https://user-images.githubusercontent.com/108685788/211551713-dc4b87f9-28fc-4b43-82c5-27665402d760.gif" Width="50%" Height="50%"/>
+Keep repeating steps 3 & 4 until you are left with only a few addresses.
+<img width="315" alt="Values_Left" src="https://user-images.githubusercontent.com/108685788/211553392-c9f34a26-7eb4-4f73-971d-e6c5e1e49022.png">
+In my case I'm left with four addresses which are all 4 bytes apart. This could lead to the assumption that we found a structure which contains the encrypted gold value and some additional information used to decrypt it.
+<h1 id="practical---finding-encryption-function">Practical - Finding Encryption Function<a hidden class="anchor" aria-hidden="true" href="#practical---finding-encryption-function">#</a></h1>
+<p>The next step is to find out where the encrypted value is written to the address we found. To do this, right click the memory address and &ldquo;find out what writes to this address&rdquo;. By doing this a window will pop up which keeps track at which location the content of our address is modified. If you now change your gold value it should display which assembly instruction, including the address, is changing the value.<br>
+<img width="212" alt="writesToAddr" src="https://user-images.githubusercontent.com/108685788/211561466-5af8af2c-cad8-4f0c-bd40-1ce37b8a9b57.png"><br>
+We now found the function which encrypts our value. Most encryption functions have xor, shl/shr assembly instructions in them which is a good indicator to know you&rsquo;re at the correct place.<br>
+I decided to look at that function in IDA to get an overview of how many functions call that encryption function and to get an idea of how the encryption looks like.<br>
+<img width="442" alt="callsToEncryption" src="https://user-images.githubusercontent.com/108685788/211563033-1ca423c0-353b-4291-a3fa-aa02c0839d77.png"><br>
+The encryption is called at 1123 places, meaning it won&rsquo;t just be used to encrypt our gold value. This tells us it won&rsquo;t be as easy as setting a breakpoint and tracing back the stack when changing the gold value, since the encryption will most likely be called by another function before we are able to change our gold value.<br>
+<img width="290" alt="encryptionFunction" src="https://user-images.githubusercontent.com/108685788/211564083-f42159f9-7d0e-4d7a-af61-cccb113de52c.png"><br>
+Looking at the encryption function we see that it creates a random value, stores it at the address of the second argument. It uses the random value to perform some arithmetic on the first argument(which will most likely be our decrypted value) which is stored at the second arguments address + 4(most likely a structure). The function returns some kind of checksum, which is created with some arithmetic including the encrypted value, the random value and 0xBAADF00D. The random value will most likely be stored on the heap to decrypt the value later. Since we&rsquo;re hooking the gold value before it gets encrypted, we won&rsquo;t bother any further with looking at the encryption. I&rsquo;d still suggest naming the values &amp; functions inside of IDA once you know what they are doing.<br>
+<img width="423" alt="encrpytionFucntionNamed" src="https://user-images.githubusercontent.com/108685788/211568552-a426edb6-9c2b-4aee-a91a-c8784b9e9e4b.png"><br></p>
+<h1 id="practical---finding-decrypted-gold-value">Practical - Finding Decrypted gold value<a hidden class="anchor" aria-hidden="true" href="#practical---finding-decrypted-gold-value">#</a></h1>
+<p>Moving back to Cheat Engine, we still have the window open which tells us what instruction writes to our encrypted gold value. If you double click the instruction a window will pop up, at the bottom it will show what the registers held at the time the instruction was executed.<br>
+<img src="https://user-images.githubusercontent.com/108685788/211572675-b3785c00-1e60-492c-b9cb-3994c2dc311a.gif" Width="50%" Height="50%"/><br>
+As explained above the encryption function is called at 1122 other places, meaning we can&rsquo;t simply set a breakpoint. What we&rsquo;ll have to do is set a conditional breakpoint. Since we know that the instruction which writes our address is &ldquo;mov [edi], esi&rdquo; we know that edi must hold our memory address we found. Looking at the registers, we see that EDI equals 559A9131, which is our memory address(It&rsquo;s our memory address + 1, Cheat Engine displays &ldquo;The value of the pointer needed to find this address is probably 559A9131&rdquo;).<br>
+We want to trace back which function called the encryption function for the gold, there are multiple methods for that. One way is to use Break and trace, a Cheat Engine function which is quite powerful. For the sake of simplicity we will use a normal conditional breakpoint, step through the code till we hit a return and safe that address. To set a breakpoint, go to the memory address which wrote our encrypted gold value, right click it and click &ldquo;set breakpoint(Hardware Breakpoint)&rdquo;.<br>
+<img src="https://user-images.githubusercontent.com/108685788/211582740-0436aa60-1ffb-4b5f-a32b-70084a8184f8.gif" Width="50%" Height="50%"/><br>
+After setting a breakpoint we have to add a condition to it. Right click the address again, select &ldquo;set/change Breakpoint condition&rdquo;. A window will pop up where you&rsquo;ll enter the condition.<br>
+<img src="https://user-images.githubusercontent.com/108685788/211584065-8c66cf29-be06-438a-b11f-89044267127b.gif" Width="50%" Height="50%"/><br>
+In my case the breakpoint should hit if EDI equals 0x559A9131. It is possible that the breakpoint was hit before you were able to set the condition, in that case press &ldquo;Run&rdquo;(f9) to continue the game. Now drop/gain some gold, the breakpoint should get hit. Step Over (f8) the instructions until you reach a return. Once you step over the return, you&rsquo;ll reach the function which called the encryption. Above the instructions you&rsquo;re currently at you&rsquo;ll see a call (the call to the encryption). Set a breakpoint at that call and you should see the encrypted gold value inside a register or the stack.<br>
+<img src="https://user-images.githubusercontent.com/108685788/211588878-11ab4a15-df0f-4cad-bce6-90d9ea4589bb.gif" Width="50%" Height="50%"/><br>
+In my case the register EAX and ECX both hold my current gold value in hex. The location your gold is stored may differ depending on the game. <br>
+<img width="202" alt="gold" src="https://user-images.githubusercontent.com/108685788/211589934-423d47c5-25d8-4e68-902b-c77ac8d4648c.png"></p>
+<h1 id="detour">Detour<a hidden class="anchor" aria-hidden="true" href="#detour">#</a></h1>
+<p>Since there are lots of tutorials about detouring online I will not cover that topic today. Simply write a detour at the address where the gold value is stored, mov it into your own allocated memory and print it. Inline Assembly can be used for this.<br>
+<img src="https://user-images.githubusercontent.com/108685788/211629149-e41d9fb1-e1bf-4bd2-b9a5-c1e15a89d299.gif" Width="50%" Height="50%"/><br></p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">Schnee | Software Security</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

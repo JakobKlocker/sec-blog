@@ -1,15 +1,14 @@
-
 ---
 title: "Time-Locked Authentication Crackme Write-up"
 date: 2026-01-07
 draft: false
 
+summary : "Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow"
+
 description: >
   Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
-
-summary: >
-  Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
 ---
+
 ## Infos
 - **Author: zaq3m1hjx@mozmail.com**  
 - **Crackme Link: https://crackmes.one/crackme/69218b532d267f28f69b7fd3**

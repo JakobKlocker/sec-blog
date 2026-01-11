@@ -3,15 +3,12 @@ title: "Matryoshka Crackme Write-up"
 date: 2026-01-06
 draft: false
 
+summary : "Reverse-engineering write-up of the Matryoshka crackme, focusing on its in-memory ELF loader using memfd_create and execve"
+
 description: >
   Reverse-engineering write-up of the Matryoshka crackme, focusing on its
   in-memory ELF loader using memfd_create and execve.
 
-hideSummary: true
-cover:
-  image: "cover.png"
-  relative: true
-  hiddenInSingle: true
 ---
 ## Infos
 - **Author: iamwololo**  

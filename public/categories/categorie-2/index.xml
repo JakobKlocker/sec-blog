@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Categorie 2 on Schnee | Software Security</title>
+    <link>http://localhost:1313/categories/categorie-2/</link>
+    <description>Recent content in Categorie 2 on Schnee | Software Security</description>
+    <generator>Hugo -- 0.154.2</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 11 Jan 2026 18:34:14 +0100</lastBuildDate>
+    <atom:link href="http://localhost:1313/categories/categorie-2/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Encryption</title>
+      <link>http://localhost:1313/posts/encryption/</link>
+      <pubDate>Sun, 11 Jan 2026 18:34:14 +0100</pubDate>
+      <guid>http://localhost:1313/posts/encryption/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>My First Post</title>
+      <link>http://localhost:1313/posts/my-first-post/</link>
+      <pubDate>Sun, 11 Jan 2026 18:28:54 +0100</pubDate>
+      <guid>http://localhost:1313/posts/my-first-post/</guid>
+      <description>this is description</description>
+    </item>
+    <item>
+      <title>Encryption</title>
+      <link>http://localhost:1313/posts/encrypted-values/</link>
+      <pubDate>Fri, 09 Jun 2023 18:34:14 +0100</pubDate>
+      <guid>http://localhost:1313/posts/encrypted-values/</guid>
+      <description>&lt;h1 id=&#34;intro&#34;&gt;Intro&lt;/h1&gt;
+&lt;p&gt;Most games these days will encrypt important values such as player &amp;amp; enemy information.&lt;br&gt;
+This makes it harder to find this information, since we can&amp;rsquo;t just search the memory for an exact value without knowing the encryption.&lt;br&gt;
+Since the game needs the actual values to do arithmetic and logic operations on it these values will have to be decrypted, worked with and encrypted again. In this post I will explain how to find the decrypted values, using the gold value as an example.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
