@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto" data-theme="dark">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <title>Finding Encrypted Game Values Using Cheat Engine | Schnee | Software Security</title>
 <meta name="keywords" content="">
 <meta name="description" content="An introduction to locating decrypted runtime values in games using Cheat Engine, illustrated with MapleStory">
 <meta name="author" content="Schnee">
-<link rel="canonical" href="http://localhost:1313/posts/encrypted-values/">
+<link rel="canonical" href="https://schnee.re/posts/encrypted-values/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
-<link rel="icon" href="http://localhost:1313/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
-<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<link rel="icon" href="https://schnee.re/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://schnee.re/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://schnee.re/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://schnee.re/apple-touch-icon.png">
+<link rel="mask-icon" href="https://schnee.re/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/encrypted-values/">
+<link rel="alternate" hreflang="en" href="https://schnee.re/posts/encrypted-values/">
 <noscript>
     <style>
         #theme-toggle,
@@ -33,13 +33,79 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
+</script><meta property="og:url" content="https://schnee.re/posts/encrypted-values/">
+  <meta property="og:site_name" content="Schnee | Software Security">
+  <meta property="og:title" content="Finding Encrypted Game Values Using Cheat Engine">
+  <meta property="og:description" content="An introduction to locating decrypted runtime values in games using Cheat Engine, illustrated with MapleStory">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2023-06-09T18:34:14+01:00">
+    <meta property="article:modified_time" content="2026-01-11T18:34:14+01:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Finding Encrypted Game Values Using Cheat Engine">
+<meta name="twitter:description" content="An introduction to locating decrypted runtime values in games using Cheat Engine, illustrated with MapleStory">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://schnee.re/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Finding Encrypted Game Values Using Cheat Engine",
+      "item": "https://schnee.re/posts/encrypted-values/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Finding Encrypted Game Values Using Cheat Engine",
+  "name": "Finding Encrypted Game Values Using Cheat Engine",
+  "description": "An introduction to locating decrypted runtime values in games using Cheat Engine, illustrated with MapleStory",
+  "keywords": [
+    
+  ],
+  "articleBody": "Intro Most games these days will encrypt important values such as player \u0026 enemy information.\nThis makes it harder to find this information, since we can’t just search the memory for an exact value without knowing the encryption.\nSince the game needs the actual values to do arithmetic and logic operations on it these values will have to be decrypted, worked with and encrypted again. In this post I will explain how to find the decrypted values, using the gold value as an example.\nApproaches There are two common approaches, one is to reverse the encryption/decryption function and use that to decrypt the encrypted value which is stored on the heap.\nThe other one is to hook the place where the game is working with the decrypted values and edit/copy the content there.\nWe will be doing the second approach today, the first approach will be covered in a later post.\nTools We’ll be using mainly Cheat Engine for memory scanning \u0026 tracing and IDA to get a better understanding of the functions we’re analysing.\nhttps://en.wikipedia.org/wiki/Cheat_Engine\nhttps://en.wikipedia.org/wiki/Interactive_Disassembler\nTheory In today’s post we will be looking for the gold value and display it in a C/C++ console.\nSince the value is encrypted, we can’t search for the exact amount of gold we are holding since that value is never stored on the heap.\nTherefore we will be using Cheat Engines “Changed Value” \u0026 “Unchanged Value” scanning option to find the encrypted gold address.\nThe theory is to first scan for an “Unknown initial value”. Then to scan for “Changed Value” when the amount of Gold you are holding has Changed and for “Unchanged Value” when the Value hasn’t changed. Repeat this step till you are down to a few addresses.\nAfter that we will use Cheat Engines “Find out what writes to this address” function to find the function which writes to the memory address where the encrypted value is stored. This should lead us to the encryption function.\nBy tracing back the stack we can find out which function called the encryption function and fetch the real gold value before it’s encrypted. To achieve our goal we will be placing a hook at the place where our value is decrypted, storing it into our own allocated memory \u0026 printing it into a C/C++ console.\nSkills requiered -Basic x86 ASM\n-Basic Debugging experience\nSkills acquired -Basic understanding of memory scanning\n-Dynamic Analysis\nPractical - Finding Encrypted gold address 1. First open Cheat Engine and attach it to the Game. 2. Search for \"Unknown initial value\" with value type 4 Bytes. The value type may vary depending on which type is holding the gold, if you can't find any decent result with 4 Bytes try 2 Bytes (short) or 8 Bytes (long). Most games will use 4 Bytes though. This will search the entire memory of the process attached for a specific type. 3. In game change your gold by dropping or gaining gold and search for \"Changed Value\". Since we do not know how the encryption works we can't search for \"increased\" or \"decreased value\". This will filter out all values which haven't changed. 4. Use different game functions like attacking, moving without changing your gold. Search for \"Unchanged Value\". This will filter out all values which have been changed. It is a good idea to use as many in game functions as possible to trigger a change to uninteresting values. Keep repeating steps 3 \u0026 4 until you are left with only a few addresses. In my case I'm left with four addresses which are all 4 bytes apart. This could lead to the assumption that we found a structure which contains the encrypted gold value and some additional information used to decrypt it. Practical - Finding Encryption Function The next step is to find out where the encrypted value is written to the address we found. To do this, right click the memory address and “find out what writes to this address”. By doing this a window will pop up which keeps track at which location the content of our address is modified. If you now change your gold value it should display which assembly instruction, including the address, is changing the value.\nWe now found the function which encrypts our value. Most encryption functions have xor, shl/shr assembly instructions in them which is a good indicator to know you’re at the correct place.\nI decided to look at that function in IDA to get an overview of how many functions call that encryption function and to get an idea of how the encryption looks like.\nThe encryption is called at 1123 places, meaning it won’t just be used to encrypt our gold value. This tells us it won’t be as easy as setting a breakpoint and tracing back the stack when changing the gold value, since the encryption will most likely be called by another function before we are able to change our gold value.\nLooking at the encryption function we see that it creates a random value, stores it at the address of the second argument. It uses the random value to perform some arithmetic on the first argument(which will most likely be our decrypted value) which is stored at the second arguments address + 4(most likely a structure). The function returns some kind of checksum, which is created with some arithmetic including the encrypted value, the random value and 0xBAADF00D. The random value will most likely be stored on the heap to decrypt the value later. Since we’re hooking the gold value before it gets encrypted, we won’t bother any further with looking at the encryption. I’d still suggest naming the values \u0026 functions inside of IDA once you know what they are doing.\nPractical - Finding Decrypted gold value Moving back to Cheat Engine, we still have the window open which tells us what instruction writes to our encrypted gold value. If you double click the instruction a window will pop up, at the bottom it will show what the registers held at the time the instruction was executed.\nAs explained above the encryption function is called at 1122 other places, meaning we can’t simply set a breakpoint. What we’ll have to do is set a conditional breakpoint. Since we know that the instruction which writes our address is “mov [edi], esi” we know that edi must hold our memory address we found. Looking at the registers, we see that EDI equals 559A9131, which is our memory address(It’s our memory address + 1, Cheat Engine displays “The value of the pointer needed to find this address is probably 559A9131”).\nWe want to trace back which function called the encryption function for the gold, there are multiple methods for that. One way is to use Break and trace, a Cheat Engine function which is quite powerful. For the sake of simplicity we will use a normal conditional breakpoint, step through the code till we hit a return and safe that address. To set a breakpoint, go to the memory address which wrote our encrypted gold value, right click it and click “set breakpoint(Hardware Breakpoint)”.\nAfter setting a breakpoint we have to add a condition to it. Right click the address again, select “set/change Breakpoint condition”. A window will pop up where you’ll enter the condition.\nIn my case the breakpoint should hit if EDI equals 0x559A9131. It is possible that the breakpoint was hit before you were able to set the condition, in that case press “Run”(f9) to continue the game. Now drop/gain some gold, the breakpoint should get hit. Step Over (f8) the instructions until you reach a return. Once you step over the return, you’ll reach the function which called the encryption. Above the instructions you’re currently at you’ll see a call (the call to the encryption). Set a breakpoint at that call and you should see the encrypted gold value inside a register or the stack.\nIn my case the register EAX and ECX both hold my current gold value in hex. The location your gold is stored may differ depending on the game. Detour Since there are lots of tutorials about detouring online I will not cover that topic today. Simply write a detour at the address where the gold value is stored, mov it into your own allocated memory and print it. Inline Assembly can be used for this.\n",
+  "wordCount" : "1398",
+  "inLanguage": "en",
+  "datePublished": "2023-06-09T18:34:14+01:00",
+  "dateModified": "2026-01-11T18:34:14+01:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Schnee"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://schnee.re/posts/encrypted-values/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Schnee | Software Security",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://schnee.re/favicon.ico"
+    }
+  }
+}
 </script>
 </head>
 <body id="top">
     <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
+            <a href="https://schnee.re/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -71,7 +137,7 @@
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="https://schnee.re/">Home</a>&nbsp;»&nbsp;<a href="https://schnee.re/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Finding Encrypted Game Values Using Cheat Engine
     </h1>
@@ -155,7 +221,7 @@ In my case the register EAX and ECX both hold my current gold value in hex. The 
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="http://localhost:1313/">Schnee | Software Security</a></span> · 
+        <span>&copy; 2026 <a href="https://schnee.re/">Schnee | Software Security</a></span> · 
 
     <span>
         Powered by
