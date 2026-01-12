@@ -1,4 +1,5 @@
-baseURL = "https://schnee.re/"
+#baseURL = "https://schnee.re/"
+baseURL = "http://localhost:1313/"
 languageCode = "en-us"
 title = "Schnee | Software Security"
 theme = "PaperMod"

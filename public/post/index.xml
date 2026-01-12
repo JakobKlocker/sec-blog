@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Posts on Schnee | Software Security</title>
+    <link>http://localhost:1313/post/</link>
+    <description>Recent content in Posts on Schnee | Software Security</description>
+    <generator>Hugo -- 0.154.2</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 12 Jan 2026 21:36:43 +0100</lastBuildDate>
+    <atom:link href="http://localhost:1313/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Simple VM Crackme Write-up</title>
+      <link>http://localhost:1313/post/simple_vm/simple_vm/</link>
+      <pubDate>Mon, 12 Jan 2026 21:36:43 +0100</pubDate>
+      <guid>http://localhost:1313/post/simple_vm/simple_vm/</guid>
+      <description>Reverse-engineering write-up of a custom virtual machine crackme, focusing on VM emulation and constraint extraction.</description>
+    </item>
+  </channel>
+</rss>

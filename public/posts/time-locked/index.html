@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto" data-theme="dark">
 
-<head><meta charset="utf-8">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="noindex, nofollow">
 <title>Time-Locked Authentication Crackme Write-up | Schnee | Software Security</title>
 <meta name="keywords" content="">
 <meta name="description" content="Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
 ">
 <meta name="author" content="">
-<link rel="canonical" href="https://schnee.re/posts/time-locked/">
+<link rel="canonical" href="http://localhost:1313/posts/time-locked/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://schnee.re/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://schnee.re/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://schnee.re/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://schnee.re/apple-touch-icon.png">
-<link rel="mask-icon" href="https://schnee.re/safari-pinned-tab.svg">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="https://schnee.re/posts/time-locked/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/time-locked/">
 <noscript>
     <style>
         #theme-toggle,
@@ -34,76 +34,13 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://schnee.re/posts/time-locked/">
-  <meta property="og:site_name" content="Schnee | Software Security">
-  <meta property="og:title" content="Time-Locked Authentication Crackme Write-up">
-  <meta property="og:description" content="Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.">
-  <meta property="og:locale" content="en-us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2026-01-07T00:00:00+00:00">
-    <meta property="article:modified_time" content="2026-01-07T00:00:00+00:00">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Time-Locked Authentication Crackme Write-up">
-<meta name="twitter:description" content="Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
-">
-
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://schnee.re/posts/"
-    }, 
-    {
-      "@type": "ListItem",
-      "position":  2 ,
-      "name": "Time-Locked Authentication Crackme Write-up",
-      "item": "https://schnee.re/posts/time-locked/"
-    }
-  ]
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "Time-Locked Authentication Crackme Write-up",
-  "name": "Time-Locked Authentication Crackme Write-up",
-  "description": "Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.\n",
-  "keywords": [
-    
-  ],
-  "articleBody": "Infos Author: zaq3m1hjx@mozmail.com Crackme Link: https://crackmes.one/crackme/69218b532d267f28f69b7fd3 Platform: ELF x64 Difficulty: 3.0 (crackmes.one rating) Tools Used: IDA Description “Password changes every millisecond, brute force impossible… think outside the password.”\nInitial Reconnaissance As always, we’ll first run the strings command:\n/lib64/ld-linux-x86-64.so.2 snprintf puts clock_gettime __libc_start_main __cxa_finalize __isoc99_scanf strcmp We get two hints running strings\nstrcmp is used, maybe to compare the input to a password? scanf is used, which is known for its security vulnerability when it comes to buffer overflows Static Analysis | IDA Our main functions just calls one function, which I will reference to as main from now on:\nint sub_1311() { char input[8]; // [rsp+4h] [rbp-Ch] BYREF int successBool; // [rsp+Ch] [rbp-4h] BYREF successBool = 0; printf(\"Enter password: \"); __isoc99_scanf(\"%s\"); mainCompareLogic(input, \u0026successBool); if ( successBool == 1 ) return print_success_msg(); else return puts(\"Authentication Failed\"); } and here’s the mainCompareLogic function, althought we won’t be going too deep into the function:\nint __fastcall mainCompareLogic(const char *input, _DWORD *a2) { int cmp_result; // eax char s2[32]; // [rsp+10h] [rbp-140h] BYREF struct timespec tp; // [rsp+30h] [rbp-120h] BYREF char inputAndTime[264]; // [rsp+40h] [rbp-110h] BYREF time_t v6; // [rsp+148h] [rbp-8h] v6 = time(0); clock_gettime(0, \u0026tp); snprintf(inputAndTime, 0x100u, \"%s_%ld%09ld\", input, tp.tv_sec, tp.tv_nsec); strcpy(s2, \"admin_1732276800123456789\"); cmp_result = strcmp(inputAndTime, s2); if ( !cmp_result ) { *a2 = 1; return (int)a2; } return cmp_result; } Looking at the main, we already see the function we want the program to reach, the “print_success_msg” function. print_success_msg does nothing apart from printing “Access Granted!”.\nWe have multiple options here:\nsimply patch the successBool check to always return true load our own strcmp function with LD_PRELOAD which already returns true change our local time to match the hardcoded timestamp (1732276800 seconds and 123456789 nanoseconds), which is practically infeasible use buffer overflow to set the successBool variable to 1 Buffer Overflow The main() function reads the password using scanf(\"%s\", input), which performs no bounds checking. Since input is only 8 bytes long, this allows us to overflow the buffer.\nLooking at the stack layout:\nchar input[8]; // [rsp+4h] [rbp-Ch] BYREF int successBool; // [rsp+Ch] [rbp-4h] BYREF The successBool variable is located immediately after input on the stack. By providing more than 8 bytes of input, we can overwrite successBool.\nThe program only sets successBool to 1 if the password comparison succeeds. On failure, the variable remains unchanged. This allows us to pre-set it via a buffer overflow before the comparison occurs.\nTo do this, we provide:\n8 bytes of padding followed by the 4-byte little-endian value 1 Since the value 0x01 is not printable, we use printf to construct the payload:\nprintf \"AAAAAAAA\\x01\\x00\\x00\\x00\" | ./crackme Enter password: Access Granted! Conclusion The challenge was fun, but I honestly wouldn’t give the challenge a rating of 3 when it comes to difficulty. I feel like the Unix challenges get higher ratings compared to the Windows challenges I’m used to - there was no obfuscation, no anti debugging and no encryption involved. With a simple byte change this challenge could have been completed.\n",
-  "wordCount" : "499",
-  "inLanguage": "en",
-  "datePublished": "2026-01-07T00:00:00Z",
-  "dateModified": "2026-01-07T00:00:00Z",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://schnee.re/posts/time-locked/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Schnee | Software Security",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://schnee.re/favicon.ico"
-    }
-  }
-}
 </script>
 </head>
 <body id="top">
     <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://schnee.re/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
+            <a href="http://localhost:1313/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -135,7 +72,7 @@
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="https://schnee.re/">Home</a>&nbsp;»&nbsp;<a href="https://schnee.re/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Time-Locked Authentication Crackme Write-up
     </h1>
@@ -249,7 +186,7 @@ Enter password: Access Granted!
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://schnee.re/">Schnee | Software Security</a></span> · 
+        <span>&copy; 2026 <a href="http://localhost:1313/">Schnee | Software Security</a></span> · 
 
     <span>
         Powered by

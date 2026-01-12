@@ -2,40 +2,47 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Schnee | Software Security</title>
-    <link>https://schnee.re/</link>
+    <link>http://localhost:1313/</link>
     <description>Recent content on Schnee | Software Security</description>
     <generator>Hugo -- 0.154.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 11 Jan 2026 18:34:14 +0100</lastBuildDate>
-    <atom:link href="https://schnee.re/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 12 Jan 2026 21:36:43 +0100</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Simple VM Crackme Write-up</title>
+      <link>http://localhost:1313/posts/simple_vm/simple_vm/</link>
+      <pubDate>Mon, 12 Jan 2026 21:36:43 +0100</pubDate>
+      <guid>http://localhost:1313/posts/simple_vm/simple_vm/</guid>
+      <description>Reverse-engineering write-up of a custom virtual machine crackme, focusing on VM emulation.</description>
+    </item>
     <item>
       <title>Time-Locked Authentication Crackme Write-up</title>
-      <link>https://schnee.re/posts/time-locked/</link>
+      <link>http://localhost:1313/posts/time-locked/</link>
       <pubDate>Wed, 07 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>https://schnee.re/posts/time-locked/</guid>
+      <guid>http://localhost:1313/posts/time-locked/</guid>
       <description>Reverse-engineering write-up of the Time-Locked Authentication crackme, focusing on buffer overflow.
 </description>
     </item>
     <item>
       <title>Matryoshka Crackme Write-up</title>
-      <link>https://schnee.re/posts/matryoshka/</link>
+      <link>http://localhost:1313/posts/matryoshka/</link>
       <pubDate>Tue, 06 Jan 2026 00:00:00 +0000</pubDate>
-      <guid>https://schnee.re/posts/matryoshka/</guid>
+      <guid>http://localhost:1313/posts/matryoshka/</guid>
       <description>Reverse-engineering write-up of the Matryoshka crackme, focusing on its in-memory ELF loader using memfd_create and execve.
 </description>
     </item>
     <item>
       <title>Finding Encrypted Game Values Using Cheat Engine</title>
-      <link>https://schnee.re/posts/encrypted-values/</link>
+      <link>http://localhost:1313/posts/encrypted-values/</link>
       <pubDate>Fri, 09 Jun 2023 18:34:14 +0100</pubDate>
-      <guid>https://schnee.re/posts/encrypted-values/</guid>
+      <guid>http://localhost:1313/posts/encrypted-values/</guid>
       <description>An introduction to locating decrypted runtime values in games using Cheat Engine, illustrated with MapleStory</description>
     </item>
     <item>
       <title>About</title>
-      <link>https://schnee.re/about/</link>
+      <link>http://localhost:1313/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://schnee.re/about/</guid>
+      <guid>http://localhost:1313/about/</guid>
       <description>&lt;p&gt;My name is &lt;strong&gt;Jakob Klocker&lt;/strong&gt;, online known as &lt;strong&gt;Schnee&lt;/strong&gt;.
 I started this blog in &lt;strong&gt;January 2026&lt;/strong&gt; to document software projects,
 CTF challenges and crackme write-ups.&lt;/p&gt;
