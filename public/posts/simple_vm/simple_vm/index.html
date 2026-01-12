@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto" data-theme="dark">
 
-<head><meta charset="utf-8">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="noindex, nofollow">
 <title>Simple VM Crackme Write-up | Schnee | Software Security</title>
 <meta name="keywords" content="">
 <meta name="description" content="Reverse-engineering write-up of a custom virtual machine crackme, focusing on VM emulation.">
 <meta name="author" content="Schnee">
-<link rel="canonical" href="https://schnee.re/posts/simple_vm/simple_vm/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://schnee.re/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://schnee.re/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://schnee.re/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://schnee.re/apple-touch-icon.png">
-<link rel="mask-icon" href="https://schnee.re/safari-pinned-tab.svg">
+<link rel="canonical" href="http://localhost:1313/posts/simple_vm/simple_vm/">
+<link crossorigin="anonymous" href="../../../assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="https://schnee.re/posts/simple_vm/simple_vm/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/simple_vm/simple_vm/">
 <noscript>
     <style>
         #theme-toggle,
@@ -33,79 +33,13 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://schnee.re/posts/simple_vm/simple_vm/">
-  <meta property="og:site_name" content="Schnee | Software Security">
-  <meta property="og:title" content="Simple VM Crackme Write-up">
-  <meta property="og:description" content="Reverse-engineering write-up of a custom virtual machine crackme, focusing on VM emulation.">
-  <meta property="og:locale" content="en-us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2026-01-12T21:36:43+01:00">
-    <meta property="article:modified_time" content="2026-01-12T21:36:43+01:00">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Simple VM Crackme Write-up">
-<meta name="twitter:description" content="Reverse-engineering write-up of a custom virtual machine crackme, focusing on VM emulation.">
-
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://schnee.re/posts/"
-    }, 
-    {
-      "@type": "ListItem",
-      "position":  2 ,
-      "name": "Simple VM Crackme Write-up",
-      "item": "https://schnee.re/posts/simple_vm/simple_vm/"
-    }
-  ]
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "Simple VM Crackme Write-up",
-  "name": "Simple VM Crackme Write-up",
-  "description": "Reverse-engineering write-up of a custom virtual machine crackme, focusing on VM emulation.",
-  "keywords": [
-    
-  ],
-  "articleBody": "Infos Author: xer0 Crackme Link: https://ctf.cyberleague.at/challenges#vm1-1134631594 Platform: ELF x64 Tools Used: IDA, Python Description “Introduction to virtual machines. This challenge is a simple VM”\nInitial Reconnaissance Running the binary without input:\n./vm Failed to open program file The program expects a file named program.bin. With the file present, the program waits for user input and prints either:\nSuccess: Input matches the flag! Failure: Input does not match the flag. Running strings on the binary reveals little of interest besides standard libc functions. This suggests the validation logic is hidden behind the VM.\nStatic Analysis | IDA The main function performs the following steps:\nInitializes a VM state buffer Loads program.bin into VM memory Reads 20 bytes from stdin Executes the VM Checks a VM register to determine success read(0, v8, 0x14u); run_vm(v6); if ( v6[0] == 8 ) puts(\"Success: Input matches the flag!\"); else puts(\"Failure: Input does not match the flag.\"); Input length is exactly 20 bytes VM register v6[0] acts as a success flag VM State Layout From init_vm() and run_vm() we can reconstruct the VM memory layout:\nOffset Purpose 0 Comparison flag 1–7 Registers 8–263 VM memory 264 Program counter 265 Running flag 266 Debug flag VM Instruction Set From execute_instruction() we can extract the full opcode table:\nOpcode Description 0x00 MOV reg, reg 0x01 MOV reg, imm 0x02 MOV reg, mem 0x03 ADD reg, reg 0x04 CMP reg, mem 0x05 CMP reg, reg 0xF0 JMP_IF_EQ 0xF1 JMP_IF_NEQ 0xFF HALT VM Interpreter I wrote a Python interpreter which:\nImplements the VM instruction set Forces all CMP instructions to succeed Ignores failure jumps Logs every comparison against input memory code = open(\"program.bin\", \"rb\").read() R = [0] * 300 pc = 0 flag = {} while pc \u003c len(code): op = code[pc] pc += 1 if op == 0x00: # MOV R[a], R[b] a, b = code[pc:pc+2] pc += 2 R[a] = R[b] elif op == 0x01: # MOV R[a], imm a, imm = code[pc:pc+2] pc += 2 R[a] = imm elif op == 0x02: # MOV R[a], MEM[b] a, b = code[pc:pc+2] pc += 2 R[a] = R[b + 8] elif op == 0x03: # ADD a, b = code[pc:pc+2] pc += 2 R[a] = (R[a] + R[b]) \u0026 0xff elif op == 0x04: # CMP R[a], MEM[b] a, b = code[pc:pc+2] pc += 2 idx = (b + 8) - 0xEC if 0 \u003c= idx \u003c 32: flag[idx] = R[a] print(f\"[+] {idx:02} -\u003e {chr(R[a])}\") elif op == 0xF1: # JNE pc += 1 # ignore jump elif op == 0xFF: break else: break print(\"\\nFlag:\") print(bytes(flag[i] for i in sorted(flag)).decode()) Final Flag CLAM{f1rst_vm_2097ab} Result:\nSuccess: Input matches the flag! Conclusion Overall a fun introduction to VMs. I like that the binary wasn’t stripped for simplicity and that printf statements for each Instruction was present, which made this challenge simpler.\n",
-  "wordCount" : "470",
-  "inLanguage": "en",
-  "datePublished": "2026-01-12T21:36:43+01:00",
-  "dateModified": "2026-01-12T21:36:43+01:00",
-  "author":[{
-    "@type": "Person",
-    "name": "Schnee"
-  }],
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://schnee.re/posts/simple_vm/simple_vm/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Schnee | Software Security",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://schnee.re/favicon.ico"
-    }
-  }
-}
 </script>
 </head>
 <body id="top">
     <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://schnee.re/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
+            <a href="http://localhost:1313/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -137,7 +71,7 @@
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="https://schnee.re/">Home</a>&nbsp;»&nbsp;<a href="https://schnee.re/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Simple VM Crackme Write-up
     </h1>
@@ -346,7 +280,7 @@ This suggests the validation logic is hidden behind the VM.</p>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://schnee.re/">Schnee | Software Security</a></span> · 
+        <span>&copy; 2026 <a href="http://localhost:1313/">Schnee | Software Security</a></span> · 
 
     <span>
         Powered by

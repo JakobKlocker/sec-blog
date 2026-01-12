@@ -3,6 +3,8 @@ baseURL = "https://schnee.re/"
 languageCode = "en-us"
 title = "Schnee | Software Security"
 theme = "PaperMod"
+relativeURLs = true
+canonifyURLs = false
 
 [pagination]
   pagerSize = 10
