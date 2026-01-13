@@ -11,7 +11,7 @@ description: >
 
 ---
 ## Infos
-- **Author: iamwololo**  
+- **Crackme Author: iamwololo**  
 - **Crackme Link: https://crackmes.one/crackme/68ff42b82d267f28f69b78c8**  
 - **Platform: ELF x64**  
 - **Difficulty: 2.4 (crackmes.one rating)**  

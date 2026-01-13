@@ -30,7 +30,7 @@ cover:
 
 ## Infos
 
-- **Author:** xer0  
+- **Crackme Author:** xer0  
 - **Crackme Link:** https://ctf.cyberleague.at/challenges#vm1-1134631594
 - **Platform:** ELF x64  
 - **Tools Used:** IDA, Python  

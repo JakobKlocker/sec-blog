@@ -10,7 +10,7 @@ description: >
 ---
 
 ## Infos
-- **Author: zaq3m1hjx@mozmail.com**  
+- **Crackme Author: zaq3m1hjx@mozmail.com**  
 - **Crackme Link: https://crackmes.one/crackme/69218b532d267f28f69b7fd3**
 - **Platform: ELF x64**  
 - **Difficulty: 3.0 (crackmes.one rating)**  
