@@ -6,14 +6,14 @@
     <description>Recent content in Posts on Schnee | Software Security</description>
     <generator>Hugo -- 0.154.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 13 Jan 2026 18:50:40 +0100</lastBuildDate>
+    <lastBuildDate>Sat, 17 Jan 2026 18:50:40 +0100</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Hideout Crackme Write-Up</title>
-      <link>http://localhost:1313/posts/hideout/</link>
-      <pubDate>Tue, 13 Jan 2026 18:50:40 +0100</pubDate>
-      <guid>http://localhost:1313/posts/hideout/</guid>
-      <description>An intro into runtime unpacking</description>
+      <title>Hideout-Maze Crackme Write-Up</title>
+      <link>http://localhost:1313/posts/hideout-maze/</link>
+      <pubDate>Sat, 17 Jan 2026 18:50:40 +0100</pubDate>
+      <guid>http://localhost:1313/posts/hideout-maze/</guid>
+      <description>Multi-stage runtime unpacking crackme</description>
     </item>
     <item>
       <title>Simple VM Crackme Write-up</title>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Hideout-Maze Crackme Write-Up | Schnee | Software Security</title>
+<meta name="keywords" content="">
+<meta name="description" content="Multi-stage runtime unpacking crackme">
+<meta name="author" content="Schnee">
+<link rel="canonical" href="http://localhost:1313/posts/hideout-maze/">
+<link crossorigin="anonymous" href="../../assets/css/stylesheet.343cc480b9ffc8f04ccbe5e968ad674880cab773ec19905e93033065c1e7a804.css" integrity="sha256-NDzEgLn/yPBMy&#43;XpaK1nSIDKt3PsGZBekwMwZcHnqAQ=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/hideout-maze/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Schnee | Software Security (Alt + H)">Schnee | Software Security</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Hideout-Maze Crackme Write-Up
+    </h1>
+    <div class="post-meta"><span title='2026-01-17 18:50:40 +0100 CET'>January 17, 2026</span>&nbsp;·&nbsp;<span>4 min</span>&nbsp;·&nbsp;<span>Schnee</span>
+
+</div>
+  </header> 
+  <div class="post-content"><hr>
+<h2 id="infos">Infos<a hidden class="anchor" aria-hidden="true" href="#infos">#</a></h2>
+<ul>
+<li><strong>Crackme Author:</strong> dmarth</li>
+<li><strong>Crackme Link:</strong> <a href="https://ctf.cyberleague.at/challenges#Hideout%20Maze--979319403">https://ctf.cyberleague.at/challenges#Hideout%20Maze&ndash;979319403</a></li>
+<li><strong>Platform:</strong> ELF x64</li>
+<li><strong>Tools Used:</strong> IDA, pwndbg</li>
+</ul>
+<hr>
+<h2 id="description">Description<a hidden class="anchor" aria-hidden="true" href="#description">#</a></h2>
+<blockquote>
+<p>After entering the secret hideout, you realize this was only the beginning.</p>
+<p><strong>Note:</strong> The flag is in the format <code>acsc{...}</code></p>
+</blockquote>
+<hr>
+<h2 id="high-level-overview">High-Level Overview<a hidden class="anchor" aria-hidden="true" href="#high-level-overview">#</a></h2>
+<p>This crackme implements a <strong>multi-stage runtime unpacker</strong>. Each character of the input decrypts one 0x1000-byte code page using a simple <code>(~byte) ^ key</code> transformation. After decryption, execution jumps directly into the freshly unpacked code. The return value of the <strong>final stage</strong> determines whether the flag is correct.</p>
+<p>Instead of fully emulating the execution flow in a debugger, the decryption logic can be reproduced offline, allowing the correct input bytes (the flag) to be recovered directly.</p>
+<hr>
+<h2 id="initial-reconnaissance">Initial Reconnaissance<a hidden class="anchor" aria-hidden="true" href="#initial-reconnaissance">#</a></h2>
+<p>Running <code>strings</code> on the binary produces mostly meaningless output:</p>
+<pre tabindex="0"><code>ATSH
+[A\A]]
+[A\]
+AWAVUSH
+[]A^A_
+z0}ufH
+HcD$
+</code></pre><p>This suggests heavy obfuscation or runtime decryption, so the next step is static analysis in IDA.</p>
+<hr>
+<h2 id="static-analysis--ida">Static Analysis | IDA<a hidden class="anchor" aria-hidden="true" href="#static-analysis--ida">#</a></h2>
+<p>Browsing through the binary reveals a large number of functions. However, referencing the few meaningful strings (those containing <code>flag</code>) leads to the main validation routine:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>v10 <span style="color:#f92672">=</span> <span style="color:#f92672">**</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">**</span>)(input <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">sub_426CB0</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>v30 <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(_QWORD <span style="color:#f92672">*</span>)(input <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>);
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">j_ifunc_41E420</span>(v30);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ( <span style="color:#f92672">*</span>(_BYTE <span style="color:#f92672">*</span>)(v30 <span style="color:#f92672">+</span> <span style="color:#ae81ff">48</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">125</span> )
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">goto</span> LABEL_7;
+</span></span><span style="display:flex;"><span>...
+</span></span><span style="display:flex;"><span>v8 <span style="color:#f92672">=</span> <span style="color:#a6e22e">stubFunction</span>(<span style="color:#f92672">*</span>(_QWORD <span style="color:#f92672">*</span>)(input <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>));
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">free</span>(stubFunction);
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> ( v8 )
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>LABEL_7:
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">sub_4109B0</span>(<span style="color:#e6db74">&#34;Nope :(&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">sub_4109B0</span>(<span style="color:#e6db74">&#34;Correct!&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><ol>
+<li>A function pointer (<code>stubFunction</code>) is created dynamically</li>
+<li>The input character is used as part of an XOR-based transformation</li>
+<li>Execution jumps into the dynamically decrypted memory</li>
+<li>The return value of the final function decides success or failure</li>
+</ol>
+<p>Since <code>stubFunction</code> is generated at runtime, static analysis alone is insufficient.</p>
+<hr>
+<h2 id="dynamic-analysis--pwndbg">Dynamic Analysis | pwndbg<a hidden class="anchor" aria-hidden="true" href="#dynamic-analysis--pwndbg">#</a></h2>
+<p>When running the binary under <code>gdb/pwndbg</code>, execution never finishes and gets stuck in an infinite loop. Using <code>strace</code> reveals that the binary calls <code>ptrace(PTRACE_TRACEME)</code>. When this call fails (as it does under a debugger), the program intentionally loops forever.</p>
+<p>To bypass this anti-debugging mechanism, the return value check was patched so the result of <code>ptrace</code> is ignored:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rsp</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">0</span><span style="color:#66d9ef">C8h</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">var_B4</span>], <span style="color:#ae81ff">75</span><span style="color:#66d9ef">BCD15h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">call</span>    <span style="color:#66d9ef">sub_426CB0</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">test</span>    <span style="color:#66d9ef">rax</span>, <span style="color:#66d9ef">rax</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">nop</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">nop</span>
+</span></span></code></pre></div><p>With this patch in place, the binary executes normally under the debugger.</p>
+<hr>
+<h2 id="the-decryption-stub">The Decryption Stub<a hidden class="anchor" aria-hidden="true" href="#the-decryption-stub">#</a></h2>
+<p>After bypassing the anti-debugging check, execution reaches the dynamically generated function (<code>stubFunction</code>). Disassembling it reveals the following logic:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-asm" data-lang="asm"><span style="display:flex;"><span><span style="color:#a6e22e">movzx</span>   <span style="color:#66d9ef">r9</span>, <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rdi</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">inc</span>     <span style="color:#66d9ef">rdi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">push</span>    <span style="color:#66d9ef">rdi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">lea</span>     <span style="color:#66d9ef">rdi</span>, <span style="color:#66d9ef">sub_1000</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">esi</span>, (<span style="color:#66d9ef">offset</span> <span style="color:#66d9ef">loc_2F004</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">edx</span>, <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">Ah</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">syscall</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#66d9ef">rcx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">cmp</span>     <span style="color:#66d9ef">rcx</span>, <span style="color:#ae81ff">2</span><span style="color:#66d9ef">F006h</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jge</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_40</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">movzx</span>   <span style="color:#66d9ef">r8</span>, <span style="color:#66d9ef">byte</span> <span style="color:#66d9ef">ptr</span> [<span style="color:#66d9ef">rdi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">rcx</span>]
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">not</span>     <span style="color:#66d9ef">r8b</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">xor</span>     <span style="color:#66d9ef">r8</span>, <span style="color:#66d9ef">r9</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     [<span style="color:#66d9ef">rdi</span><span style="color:#960050;background-color:#1e0010">+</span><span style="color:#66d9ef">rcx</span>], <span style="color:#66d9ef">r8b</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">inc</span>     <span style="color:#66d9ef">rcx</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jmp</span>     <span style="color:#66d9ef">short</span> <span style="color:#66d9ef">loc_23</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">edx</span>, <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">0</span><span style="color:#66d9ef">Ah</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">syscall</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">eax</span>, <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">mov</span>     <span style="color:#66d9ef">rbx</span>, <span style="color:#66d9ef">rdi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">pop</span>     <span style="color:#66d9ef">rdi</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">jmp</span>     <span style="color:#66d9ef">rbx</span>
+</span></span></code></pre></div><p>Each stage works as follows:</p>
+<ul>
+<li>Read one input byte</li>
+<li>Use it as an XOR key</li>
+<li>Decrypt the next 0x1000-byte page using <code>(~byte) ^ key</code></li>
+<li>Mark the page executable using <code>mprotect</code></li>
+<li>Jump to the newly decrypted code</li>
+</ul>
+<p>This pattern repeats for dozens of stages, one per input character.</p>
+<hr>
+<h2 id="offline-decryption-strategy">Offline Decryption Strategy<a hidden class="anchor" aria-hidden="true" href="#offline-decryption-strategy">#</a></h2>
+<p>Since each stage applies the same transformation, the entire chain can be unpacked offline. One known plaintext byte is sufficient to recover the key. Conveniently, each decrypted stage ends with a <code>NOP (0x90)</code> instruction at a fixed offset.</p>
+<p>Reversing the transformation:</p>
+<pre tabindex="0"><code>byte = (~byte) ^ key  =&gt;  key = (~cipher) ^ 0x90
+</code></pre><p>This allows recovery of the input character for each stage.</p>
+<h3 id="unpacking-script">Unpacking Script<a hidden class="anchor" aria-hidden="true" href="#unpacking-script">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>PAGE   <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x1000</span>
+</span></span><span style="display:flex;"><span>SIZE   <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x2f006</span>
+</span></span><span style="display:flex;"><span>OFFSET <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x60</span>
+</span></span><span style="display:flex;"><span>NOP    <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x90</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;dump.bin&#34;</span>, <span style="color:#e6db74">&#34;rb&#34;</span>) <span style="color:#66d9ef">as</span> f:
+</span></span><span style="display:flex;"><span>    data <span style="color:#f92672">=</span> bytearray(f<span style="color:#f92672">.</span>read())
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>base  <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x0000</span>
+</span></span><span style="display:flex;"><span>stage <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>size  <span style="color:#f92672">=</span> SIZE
+</span></span><span style="display:flex;"><span>flag  <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">while</span> base <span style="color:#f92672">+</span> PAGE <span style="color:#f92672">+</span> OFFSET <span style="color:#f92672">&lt;</span> len(data):
+</span></span><span style="display:flex;"><span>    enc_base <span style="color:#f92672">=</span> base <span style="color:#f92672">+</span> PAGE
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cipher <span style="color:#f92672">=</span> data[enc_base <span style="color:#f92672">+</span> OFFSET]
+</span></span><span style="display:flex;"><span>    key <span style="color:#f92672">=</span> ((<span style="color:#f92672">~</span>cipher) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xff</span>) <span style="color:#f92672">^</span> NOP
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    printable <span style="color:#f92672">=</span> chr(key) <span style="color:#66d9ef">if</span> <span style="color:#ae81ff">32</span> <span style="color:#f92672">&lt;=</span> key <span style="color:#f92672">&lt;=</span> <span style="color:#ae81ff">126</span> <span style="color:#66d9ef">else</span> <span style="color:#e6db74">&#34;.&#34;</span>
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[stage </span><span style="color:#e6db74">{</span>stage<span style="color:#e6db74">:</span><span style="color:#e6db74">02d</span><span style="color:#e6db74">}</span><span style="color:#e6db74">] key = 0x</span><span style="color:#e6db74">{</span>key<span style="color:#e6db74">:</span><span style="color:#e6db74">02x</span><span style="color:#e6db74">}</span><span style="color:#e6db74"> (</span><span style="color:#e6db74">{</span>printable<span style="color:#e6db74">}</span><span style="color:#e6db74">)&#34;</span>)
+</span></span><span style="display:flex;"><span>    flag <span style="color:#f92672">+=</span> chr(key)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(size):
+</span></span><span style="display:flex;"><span>        data[enc_base <span style="color:#f92672">+</span> i] <span style="color:#f92672">=</span> ((<span style="color:#f92672">~</span>data[enc_base <span style="color:#f92672">+</span> i]) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xff</span>) <span style="color:#f92672">^</span> key
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> data[enc_base <span style="color:#f92672">+</span> OFFSET] <span style="color:#f92672">!=</span> NOP:
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">break</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    base <span style="color:#f92672">+=</span> PAGE
+</span></span><span style="display:flex;"><span>    size <span style="color:#f92672">-=</span> PAGE
+</span></span><span style="display:flex;"><span>    stage <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(flag)
+</span></span></code></pre></div><p>Running this script recovers:</p>
+<pre tabindex="0"><code>acsc{1m_n0t_3v3n_m4d_th4ts_4M4Z31ng_jsOyD3Amczfo
+</code></pre><hr>
+<h2 id="the-final-stage">The Final Stage<a hidden class="anchor" aria-hidden="true" href="#the-final-stage">#</a></h2>
+<p>The final decrypted page differs from the others: instead of decrypting another stage, it must <strong>return 0</strong> to signal success. Therefore, the decrypted bytes must form valid code ending in a <code>ret</code> instruction with <code>eax = 0</code>.</p>
+<p>Testing possible input bytes and disassembling the resulting code reveals:</p>
+<pre tabindex="0"><code>[key &#39;l&#39;] mov eax, 0; ret
+</code></pre><p>This provides the missing character. Since the flag format requires a closing brace, the final flag becomes:</p>
+<pre tabindex="0"><code>acsc{1m_n0t_3v3n_m4d_th4ts_4M4Z31ng_jsOyD3Amczfol}
+</code></pre><hr>
+<h2 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h2>
+<p>This crackme demonstrates a multi-stage self-decrypting design combined with basic anti-debugging techniques.</p>
+<p>Overall, a very enjoyable challenge.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">Schnee | Software Security</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
