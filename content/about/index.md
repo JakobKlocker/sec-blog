@@ -6,7 +6,7 @@ showToc: false
 
 My name is **Jakob Klocker**, online known as **Schnee**.
 I started this blog in **January 2026** to document software projects,
-CTF challenges and crackme write-ups.
+CTF challenges, and crackme write-ups.
 
 ## Interests
 - Reverse engineering
@@ -16,7 +16,7 @@ CTF challenges and crackme write-ups.
 - Low-level systems & performance-oriented code
 
 ## Writing
-I aim to publish a new post roughly once per week, focusing
+I aim to publish a new post from time to time, focusing
 on hands-on analysis and practical techniques.
  
 - GitHub: https://github.com/JakobKlocker
